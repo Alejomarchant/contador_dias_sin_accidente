@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Widget</title>
+<link rel="stylesheet" href="widget.css">
+</head>
+<body>
+
+<div id="widgetBox">
+    <span id="contadorWidget">0</span>
+</div>
+
+<script>
+async function actualizarWidget() {
+    try {
+        const resp = await fetch("estado.xml?_=" + Date.now());
+        const texto = await resp.text();
+
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(texto, "application/xml");
+
+        const fechaStr = xml.querySelector("fechaUltimoAccidente").textContent.trim();
+        const fechaAccidente = new Date(fechaStr);
+        const hoy = new Date();
+
+        fechaAccidente.setHours(0,0,0,0);
+        hoy.setHours(0,0,0,0);
+
+        const diff = Math.floor((hoy - fechaAccidente) / (1000 * 60 * 60 * 24));
+        document.getElementById("contadorWidget").innerText = diff >= 0 ? diff : 0;
+
+    } catch (e) {
+        document.getElementById("contadorWidget").innerText = "—";
+    }
+}
+
+actualizarWidget();
+setInterval(actualizarWidget, 60000);
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Días sin Accidentes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="panel">
+        <h1>Días sin Accidentes</h1>
+        <p class="contador" id="contador">0</p>
+        <p class="detalle">Desde la última incidencia registrada</p>
+    </div>
+
+    <script>
+    async function cargarEstado() {
+        try {
+            const resp = await fetch("estado.xml?_=" + Date.now());
+            const texto = await resp.text();
+
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(texto, "application/xml");
+
+            const nodoFecha = xml.querySelector("fechaUltimoAccidente");
+            if (!nodoFecha) {
+                document.getElementById("contador").innerText = "—";
+                return;
+            }
+
+            const fechaStr = nodoFecha.textContent.trim();
+            const fechaAccidente = new Date(fechaStr);
+            const hoy = new Date();
+
+            // Normalizamos a medianoche para evitar problemas de zona horaria
+            fechaAccidente.setHours(0,0,0,0);
+            hoy.setHours(0,0,0,0);
+
+            const diff = Math.floor((hoy - fechaAccidente) / (1000 * 60 * 60 * 24));
+            document.getElementById("contador").innerText = diff >= 0 ? diff : 0;
+        } catch (e) {
+            document.getElementById("contador").innerText = "—";
+            console.error(e);
+        }
+    }
+
+    cargarEstado();
+    </script>
+
+</body>
+</html>
